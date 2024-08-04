@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/Masterminds/semver/v3"
 )
 
 type PackageInfo struct {
@@ -33,11 +35,22 @@ func main() {
 		return
 	}
 
+	// Handle empty or malformed output
+	if len(output) == 0 || string(output) == "null" {
+		fmt.Println("No dependencies found for the specified package version.")
+		output = []byte("{}") // Ensure output is valid JSON
+	}
+
 	// Parse the JSON output
 	var dependencies map[string]string
 	if err := json.Unmarshal(output, &dependencies); err != nil {
 		fmt.Println("Error parsing JSON:", err)
 		return
+	}
+
+	// If dependencies are not provided, create an empty map
+	if len(dependencies) == 0 {
+		dependencies = make(map[string]string)
 	}
 
 	// Extract the dependency names and sort them
@@ -140,6 +153,7 @@ func saveLatestVersionsToFile(filePath string, packageInfo PackageInfo) error {
 }
 
 func getLatestVersionForRange(packageName, versionRange string) (string, error) {
+	// Fetch all versions of the package
 	cmd := exec.Command("npm", "view", packageName, "versions", "--json")
 	output, err := cmd.Output()
 	if err != nil {
@@ -169,11 +183,21 @@ func getLatestVersionForRange(packageName, versionRange string) (string, error) 
 	return latestVersion, nil
 }
 
-// isVersionInRange checks if a version matches a given range.
 func isVersionInRange(version, versionRange string) bool {
-	// This function should use a library or implement logic to properly parse and match version ranges.
-	// For simplicity, this example does a very basic check.
-	return strings.Contains(versionRange, version)
+	// Parse the range
+	r, err := semver.NewConstraint(versionRange)
+	if err != nil {
+		return false
+	}
+
+	// Parse the version
+	v, err := semver.NewVersion(version)
+	if err != nil {
+		return false
+	}
+
+	// Check if the version satisfies the range
+	return r.Check(v)
 }
 
 // compareVersions compares two version strings and returns an integer indicating their order.
