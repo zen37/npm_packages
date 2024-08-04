@@ -16,13 +16,13 @@ type PackageInfo struct {
 }
 
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Println("Usage: go run main.go <packageName> <version>")
+	packageName, packageVersion, err := parseArguments()
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
-
-	packageName := os.Args[1]
-	packageVersion := os.Args[2]
+	fmt.Printf("Package Name: %s\n", packageName)
+	fmt.Printf("Package Version: %s\n", packageVersion)
 
 	// Get the dependencies of the specified package version
 	cmd := exec.Command("npm", "view", fmt.Sprintf("%s@%s", packageName, packageVersion), "dependencies", "--json")
@@ -79,6 +79,17 @@ func main() {
 	fmt.Printf("Dependencies for %s@%s have been saved to %s\n", packageName, packageVersion, filePath)
 }
 
+func parseArguments() (string, string, error) {
+	if len(os.Args) < 3 {
+		return "", "", fmt.Errorf("Usage: go run main.go <packageName> <version>")
+	}
+
+	packageName := os.Args[1]
+	packageVersion := os.Args[2]
+
+	return packageName, packageVersion, nil
+}
+
 func getFilePath(packageName string, packageVersion string) string {
 
 	// Define the file name and path
@@ -86,5 +97,4 @@ func getFilePath(packageName string, packageVersion string) string {
 	filePath := filepath.Join("testdata", fileName)
 
 	return filePath
-
 }
