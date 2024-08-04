@@ -59,9 +59,7 @@ func main() {
 		Dependencies: sortedDependencies,
 	}
 
-	// Define the file name and path
-	fileName := fmt.Sprintf("%s@%s.json", packageName, packageVersion)
-	filePath := filepath.Join("testdata", fileName)
+	filePath := getFilePath(packageName, packageVersion)
 
 	// Save the package information to a JSON file
 	file, err := os.Create(filePath)
@@ -79,4 +77,14 @@ func main() {
 	}
 
 	fmt.Printf("Dependencies for %s@%s have been saved to %s\n", packageName, packageVersion, filePath)
+}
+
+func getFilePath(packageName string, packageVersion string) string {
+
+	// Define the file name and path
+	fileName := fmt.Sprintf("%s@%s.json", packageName, packageVersion)
+	filePath := filepath.Join("testdata", fileName)
+
+	return filePath
+
 }
