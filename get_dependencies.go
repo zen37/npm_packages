@@ -61,22 +61,33 @@ func main() {
 
 	filePath := getFilePath(packageName, packageVersion)
 
-	// Save the package information to a JSON file
-	file, err := os.Create(filePath)
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(packageInfo); err != nil {
-		fmt.Println("Error writing JSON to file:", err)
+	if err := savePackageInfoToFile(filePath, packageInfo); err != nil {
+		fmt.Println("Error:", err)
 		return
 	}
 
 	fmt.Printf("Dependencies for %s@%s have been saved to %s\n", packageName, packageVersion, filePath)
+}
+
+// savePackageInfoToFile saves the package information to a JSON file.
+func savePackageInfoToFile(filePath string, packageInfo PackageInfo) error {
+	// Create the file
+	file, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("error creating file: %w", err)
+	}
+	defer file.Close()
+
+	// Create JSON encoder and set indentation
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+
+	// Encode and save the package information
+	if err := encoder.Encode(packageInfo); err != nil {
+		return fmt.Errorf("error writing JSON to file: %w", err)
+	}
+
+	return nil
 }
 
 func parseArguments() (string, string, error) {
