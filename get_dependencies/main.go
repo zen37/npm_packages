@@ -12,13 +12,25 @@ import (
 	"github.com/Masterminds/semver/v3"
 )
 
+type Config struct {
+	TestdataPath string `json:"testdata_path"`
+}
+
 type PackageInfo struct {
 	Name         string            `json:"name"`
 	Version      string            `json:"version"`
 	Dependencies map[string]string `json:"dependencies"`
 }
 
+var config Config
+
 func main() {
+
+	// Load configuration
+	if err := loadConfig("../config.json"); err != nil {
+		fmt.Println("Error loading config:", err)
+		return
+	}
 	packageName, packageVersion, err := parseArguments()
 	if err != nil {
 		fmt.Println(err)
@@ -220,13 +232,29 @@ func parseArguments() (string, string, error) {
 func getFilePath(packageName, packageVersion string) string {
 	// Define the file name and path
 	fileName := fmt.Sprintf("%s@%s.json", packageName, packageVersion)
-	filePath := filepath.Join("testdata", fileName)
+	filePath := filepath.Join(config.TestdataPath, fileName)
 	return filePath
 }
 
 func getLatestVersionsFilePath(packageName, packageVersion string) string {
 	// Define the file name and path for latest versions
 	fileName := fmt.Sprintf("%s@%s-latest.json", packageName, packageVersion)
-	filePath := filepath.Join("testdata", fileName)
+	filePath := filepath.Join(config.TestdataPath, fileName)
 	return filePath
+}
+
+// loadConfig loads configuration from a JSON file.
+func loadConfig(filePath string) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("error opening config file: %w", err)
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&config); err != nil {
+		return fmt.Errorf("error decoding config file: %w", err)
+	}
+
+	return nil
 }
