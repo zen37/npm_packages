@@ -82,8 +82,10 @@ func getAllDependencies(packageName, packageVersion string) (map[string]string, 
 
 		// Get the dependencies for the current package
 		cmd := exec.Command("npm", "view", current, "dependencies", "--json")
-		output, err := cmd.Output()
+		//output, err := cmd.Output()
+		output, err := cmd.CombinedOutput() // Use CombinedOutput to capture both stdout and stderr
 		if err != nil {
+			fmt.Printf("Error: %s\n", string(output)) // Print the combined output
 			return nil, err
 		}
 
