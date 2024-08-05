@@ -25,12 +25,12 @@ type PackageInfo struct {
 var config Config
 
 func main() {
-
 	// Load configuration
 	if err := loadConfig("../config.json"); err != nil {
 		fmt.Println("Error loading config:", err)
 		return
 	}
+
 	packageName, packageVersion, err := parseArguments()
 	if err != nil {
 		fmt.Println(err)
@@ -41,9 +41,9 @@ func main() {
 
 	// Get the dependencies of the specified package version
 	cmd := exec.Command("npm", "view", fmt.Sprintf("%s@%s", packageName, packageVersion), "dependencies", "--json")
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput() // Use CombinedOutput to capture both stdout and stderr
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Printf("Error: %s\n", string(output)) // Print the combined output
 		return
 	}
 
